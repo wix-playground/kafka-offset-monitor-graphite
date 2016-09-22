@@ -7,6 +7,7 @@ import com.codahale.metrics.graphite.{GraphiteReporter, GraphiteSender, Graphite
 import com.codahale.metrics.{Gauge, MetricFilter, MetricRegistry}
 import com.google.common.cache._
 import com.quantifind.kafka.OffsetGetter.OffsetInfo
+import com.readytalk.metrics.StatsDReporter
 
 class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.offsetapp.OffsetInfoReporter {
 
@@ -14,18 +15,19 @@ class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.
 
   val metrics : MetricRegistry = new MetricRegistry()
 
+
   val graphite : GraphiteSender = {
     val address = new InetSocketAddress(GraphiteReporterArguments.graphiteHost, GraphiteReporterArguments.graphitePort)
     new GraphiteUDP(address)
   }
-  val reporter : GraphiteReporter = GraphiteReporter.forRegistry(metrics)
+
+  StatsDReporter.forRegistry(metrics)
     .prefixedWith(GraphiteReporterArguments.graphitePrefix)
-    .convertRatesTo(TimeUnit.SECONDS)
+    .convertRatesTo(TimeUnit.MINUTES)
     .convertDurationsTo(TimeUnit.MILLISECONDS)
     .filter(MetricFilter.ALL)
-    .build(graphite)
-
-  reporter.start(GraphiteReporterArguments.graphiteReportPeriod, TimeUnit.SECONDS)
+    .build(GraphiteReporterArguments.graphiteHost, GraphiteReporterArguments.graphitePort)
+    .start(GraphiteReporterArguments.graphiteReportPeriod, TimeUnit.SECONDS)
 
   val removalListener : RemovalListener[String, GaugesValues] = new RemovalListener[String, GaugesValues] {
     override def onRemoval(removalNotification: RemovalNotification[String, GaugesValues]) = {
