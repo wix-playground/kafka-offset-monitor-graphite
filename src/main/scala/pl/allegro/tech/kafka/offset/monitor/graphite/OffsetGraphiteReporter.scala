@@ -3,11 +3,10 @@ package pl.allegro.tech.kafka.offset.monitor.graphite
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
 
-import com.codahale.metrics.{MetricRegistry, MetricFilter}
-import com.codahale.metrics.graphite.{GraphiteReporter, Graphite}
+import com.codahale.metrics.graphite.{GraphiteReporter, GraphiteSender, GraphiteUDP}
+import com.codahale.metrics.{Gauge, MetricFilter, MetricRegistry}
 import com.google.common.cache._
 import com.quantifind.kafka.OffsetGetter.OffsetInfo
-import com.codahale.metrics.Gauge
 
 class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.offsetapp.OffsetInfoReporter {
 
@@ -15,7 +14,10 @@ class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.
 
   val metrics : MetricRegistry = new MetricRegistry()
 
-  val graphite : Graphite = new Graphite(new InetSocketAddress(GraphiteReporterArguments.graphiteHost, GraphiteReporterArguments.graphitePort))
+  val graphite : GraphiteSender = {
+    val address = new InetSocketAddress(GraphiteReporterArguments.graphiteHost, GraphiteReporterArguments.graphitePort)
+    new GraphiteUDP(address)
+  }
   val reporter : GraphiteReporter = GraphiteReporter.forRegistry(metrics)
     .prefixedWith(GraphiteReporterArguments.graphitePrefix)
     .convertRatesTo(TimeUnit.SECONDS)

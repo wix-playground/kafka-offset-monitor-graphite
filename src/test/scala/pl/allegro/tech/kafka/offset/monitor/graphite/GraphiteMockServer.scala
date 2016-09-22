@@ -1,8 +1,7 @@
 package pl.allegro.tech.kafka.offset.monitor.graphite
 
-import java.io.InputStream
 import java.lang
-import java.net.ServerSocket
+import java.net.{DatagramPacket, DatagramSocket}
 import java.util.concurrent.{Callable, ExecutorService, Executors}
 
 import com.jayway.awaitility.Awaitility._
@@ -10,7 +9,7 @@ import com.jayway.awaitility.Duration
 
 class GraphiteMockServer(port: Int) {
 
-  var serverSocket: ServerSocket = null
+  var serverSocket: DatagramSocket = null
   val executor: ExecutorService = Executors.newFixedThreadPool(10)
   @volatile var listen: Boolean = false
 
@@ -18,7 +17,7 @@ class GraphiteMockServer(port: Int) {
   var receivedMetrics: scala.collection.mutable.Map[String, Double] = scala.collection.mutable.Map()
   
   def start() {
-    serverSocket = new ServerSocket(port)
+    serverSocket = new DatagramSocket(port)
     listen = true
     handleConnections()
   }
@@ -27,16 +26,11 @@ class GraphiteMockServer(port: Int) {
     executor.execute(new Runnable {
       override def run() {
         while(listen) {
-            readData(serverSocket.accept().getInputStream())
+          val receiveData = new Array[Byte](1024)
+          val packet = new DatagramPacket(receiveData, receiveData.length)
+          serverSocket.receive(packet)
+          handleMetric(new String(packet.getData))
         }
-      }
-    })
-  }
-
-  private def readData(stream: InputStream) {
-    executor.execute(new Runnable {
-      override def run() {
-        scala.io.Source.fromInputStream(stream).getLines().foreach((line) => handleMetric(line))
       }
     })
   }
