@@ -31,9 +31,9 @@ class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.
 
   val removalListener : RemovalListener[String, GaugesValues] = new RemovalListener[String, GaugesValues] {
     override def onRemoval(removalNotification: RemovalNotification[String, GaugesValues]) = {
-      metrics.remove(removalNotification.getKey() + ".offset")
-      metrics.remove(removalNotification.getKey() + ".logSize")
-      metrics.remove(removalNotification.getKey() + ".lag")
+      metrics.remove(removalNotification.getKey() + "offset")
+      metrics.remove(removalNotification.getKey() + "logSize")
+      metrics.remove(removalNotification.getKey() + "lag")
     }
   }
 
@@ -63,9 +63,9 @@ class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.
             }
           }
 
-          metrics.register(key + ".offset", offsetGauge)
-          metrics.register(key + ".logSize", logSizeGauge)
-          metrics.register(key + ".lag", lagGauge)
+          metrics.register(key + "offset", offsetGauge)
+          metrics.register(key + "logSize", logSizeGauge)
+          metrics.register(key + "lag", lagGauge)
 
           values
         }
@@ -82,6 +82,6 @@ class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.
   }
 
   def getMetricName(offsetInfo: OffsetInfo): String = {
-    offsetInfo.topic.replace(".", "_") + "." + offsetInfo.group.replace(".", "_") + "." + offsetInfo.partition
+    "topic=" + offsetInfo.topic.replace(".", "_") + ".group=" + offsetInfo.group.replace(".", "_") + ".partition=" + offsetInfo.partition + ".gauge="
   }
 }
