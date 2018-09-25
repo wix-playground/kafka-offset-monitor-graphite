@@ -82,6 +82,6 @@ class OffsetGraphiteReporter (pluginsArgs: String) extends com.quantifind.kafka.
   }
 
   def getMetricName(offsetInfo: OffsetInfo): String = {
-    "topic=" + offsetInfo.topic.replace(".", "_") + ".group=" + offsetInfo.group.replace(".", "_") + ".partition=" + offsetInfo.partition + ".gauge="
+    "topic_" + offsetInfo.topic.replace(".", "_") + ".group_" + offsetInfo.group.replace(".", "_") + ".partition_" + offsetInfo.partition + ".gauge_"
   }
 }
